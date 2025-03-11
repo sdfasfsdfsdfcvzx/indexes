@@ -1,47 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>Geolocation Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Check</title>
+    <script>
+        // Function to check if the geolocation permission is granted
+        function checkPermissions() {
+            if (navigator.permissions) {
+                navigator.permissions.query({ name: 'geolocation' }).then(function (result) {
+                    if (result.state === 'granted') {
+                        console.log('Geolocation permission is granted');
+                        checkGPS();  // Call checkGPS() only if permission is granted
+                    } else if (result.state === 'denied') {
+                        alert('GPS is disabled. Please enable it for better functionality.');
+                    } else {
+                        console.log('Geolocation permission state: ' + result.state);
+                    }
+                });
+            } else {
+                console.log('Permissions API not supported in this browser.');
+                checkGPS(); // Fall back to trying GPS if permissions API is not supported
+            }
+        }
+
+        // Function to check GPS availability
+        function checkGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    function (position) {
+                        console.log("GPS is enabled and accessible");
+                        // You can also display the position here:
+                        console.log(position.coords.latitude, position.coords.longitude);
+                    },
+                    function (error) {
+                        console.log("Error code: " + error.code);  // Log the error code for debugging
+                        if (error.code === error.PERMISSION_DENIED) {
+                            alert("GPS is disabled. Please enable it for better functionality.");
+                            redirectToLocationSettings(); // Redirect to location settings
+                        } else if (error.code === error.POSITION_UNAVAILABLE) {
+                            alert("Position unavailable. Try again later.");
+                        } else if (error.code === error.TIMEOUT) {
+                            alert("The request to get your location timed out.");
+                        } else {
+                            alert("An unknown error occurred.");
+                        }
+                    },
+                    {
+                        timeout: 10000  // Set timeout to give some extra time to resolve the location
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Function to redirect the user to the Android location settings
+        function redirectToLocationSettings() {
+            // For Android devices, use an Intent to open the location settings
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            if (/android/i.test(userAgent)) {
+                // This redirects to the Android location settings page
+                window.location.href = 'intent://settings/location#Intent;scheme=android;package=com.android.settings;end';
+            }
+        }
+
+        window.onload = function () {
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            if (/android/i.test(userAgent)) {
+                checkPermissions();  // Check for permission first, then proceed to GPS check
+            }
+        };
+    </script>
 </head>
 <body>
-	<h1 style="color: green">Welcome To GFG</h1>
-	<h3>How to locate the user's position in HTML?</h3>
-	<div>
-		<p id="paraGraph"></p>
-	</div>
-	<script>
-		let paraGraph = document.getElementById("paraGraph");
-		let user_loc = navigator.geolocation;
-
-		async function geolocator() {
-			if (user_loc) {
-				try {
-					let permission = await navigator.permissions.query({ name: 'geolocation' });
-					if (permission.state === "denied") {
-						paraGraph.innerHTML = "Location access is denied. Please allow it in settings.";
-						return;
-					}
-					user_loc.getCurrentPosition(success, error);
-				} catch (err) {
-					paraGraph.innerHTML = "Error checking permissions: " + err.message;
-				}
-			} else {
-				paraGraph.innerHTML = "Your browser doesn't support geolocation API";
-			}
-		}
-
-		function success(data) {
-			let lat = data.coords.latitude;
-			let long = data.coords.longitude;
-			paraGraph.innerHTML = "Latitude: " + lat + "<br>Longitude: " + long;
-		}
-
-		function error(err) {
-			paraGraph.innerHTML = "Error: " + err.message;
-		}
-
-		// Call geolocator on page load
-		window.onload = geolocator;
-	</script>
+    <h1>Welcome to the GPS Check Page</h1>
+    <p>If you disable GPS on an Android device and refresh the page, a dialog will appear.</p>
 </body>
 </html>
