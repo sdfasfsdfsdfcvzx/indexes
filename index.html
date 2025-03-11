@@ -1,17 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insecure Shop URL Validation</title>
+	<title>Geolocation Test</title>
 </head>
 <body>
-    <!-- This link uses a custom URL scheme for potential exploitation -->
-    <!-- Update the URL as required for your specific testing or usage -->
-    <a href="insecureshop://com.insecureshop/web?url=https://google.com" 
-       title="Click to test the insecure shop URL validation">
-       Click here to continue
-    </a>
+	<h1 style="color: green">Welcome To GFG</h1>
+	<h3>How to locate the user's position in HTML?</h3>
+	<div>
+		<p id="paraGraph"></p>
+	</div>
+	<script>
+		let paraGraph = document.getElementById("paraGraph");
+		let user_loc = navigator.geolocation;
+
+		async function geolocator() {
+			if (user_loc) {
+				try {
+					let permission = await navigator.permissions.query({ name: 'geolocation' });
+					if (permission.state === "denied") {
+						paraGraph.innerHTML = "Location access is denied. Please allow it in settings.";
+						return;
+					}
+					user_loc.getCurrentPosition(success, error);
+				} catch (err) {
+					paraGraph.innerHTML = "Error checking permissions: " + err.message;
+				}
+			} else {
+				paraGraph.innerHTML = "Your browser doesn't support geolocation API";
+			}
+		}
+
+		function success(data) {
+			let lat = data.coords.latitude;
+			let long = data.coords.longitude;
+			paraGraph.innerHTML = "Latitude: " + lat + "<br>Longitude: " + long;
+		}
+
+		function error(err) {
+			paraGraph.innerHTML = "Error: " + err.message;
+		}
+
+		// Call geolocator on page load
+		window.onload = geolocator;
+	</script>
 </body>
 </html>
